@@ -1,0 +1,144 @@
+<header>
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-hls/5.14.1/videojs-contrib-hls.js"></script>
+  <script src="https://vjs.zencdn.net/7.2.3/video.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <title>Television</title>
+  <script>
+    let db_channels = [
+      { name: "VTV1", value: "https://vips-livecdn.fptplay.net/hda1/vtv1hd_vhls.smil/chunklist_b5000000.m3u8" },
+      { name: "VTV2", value: "https://vips-livecdn.fptplay.net/hda1/vtv2_vhls.smil/chunklist_b5000000.m3u8" },
+      { name: "VTV3", value: "https://vips-livecdn.fptplay.net/hda1/vtv3hd_vhls.smil/chunklist_b5000000.m3u8" },
+      { name: "VTV5", value: "http://drfamaga5qliv.vcdn.cloud/vtv05/vtv05@1080p.m3u8" },
+      { name: "VTV6", value: "https://vips-livecdn.fptplay.net/hda1/vtv6hd_vhls.smil/chunklist_b5000000.m3u8" },
+      { name: "ANTV", value: "https://vips-livecdn.fptplay.net/hda2/anninhtv_vhls.smil/chunklist_b5000000.m3u8" },
+      { name: "HBO", value: "https://livecdn.fptplay.net/hda1/hbo_hls.smil/chunklist_b2500000.m3u8" },
+      { name: "Cinemax", value: "https://livecdn.fptplay.net/hda1/cinemax_hls.smil/playlist.m3u8" },
+      { name: "Cartoon-Networks", value: "https://livecdn.fptplay.net/hda3/cartoonnetworkhd_vhls.smil/chunklist_b5000000.m3u8" },
+      { name: "Dreamworks", value: "https://vips-livecdn.fptplay.net/hda3/dreamworks_vhls.smil/chunklist_b5000000.m3u8" },
+      { name: "Warner-TV", value: "http://livecdn.fptplay.net/hda3/warnertv_vhls.smil/chunklist_b5000000.m3u8" },
+      { name: "void", value: "The selected channel is currently Unknown" },
+    ];
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+  </script>
+</header>
+
+<body style="background-color: rgb(37, 37, 37); padding: 0 0 0 150px;">
+  <h1 style="font-size: 3em; color: white;">TELEVISION</h1>
+  <div style="display: flex; justify-content: space-between;">
+    <div>
+      <video id='tvplay' class="video-js" width="1080p" style="border-radius: 2em;" controls autoplay muted>
+        <source id='tvsource' type="application/x-mpegURL">
+      </video>
+      <div id="video-title"></div>
+      <script> 
+        const VIDEO_TITLE = urlParams.get("channel");
+        const title = document.createElement('h1');
+        title.textContent = VIDEO_TITLE;
+        title.style.color = "white";
+        var title_container = document.getElementById("video-title");
+        title_container.appendChild(title)
+      </script> 
+    </div>
+    <div style="margin-left: 6em;">
+      <div id="channel_container">
+        <h1 style="margin: 0 auto; text-align: left; margin-bottom: 1em; color: white;">Available Channels</h1>
+
+        <script>
+          const CHANNEL_CONTAINER = document.getElementById("channel_container");
+
+          function render_channels (channels) {
+            for (i = 0; i <= channels.length; i++) {
+              let channel = channels[i];
+              if (channel.name != "void") {
+                const button = document.createElement('button');
+                button.innerText = channel.name.replace("-", " ");
+                button.className = "button-channel";
+                button.onclick = () => {
+                  change_channel(channel.name)
+                };
+                CHANNEL_CONTAINER.appendChild(button);
+              }
+            }
+          }
+          render_channels(db_channels);
+        </script>
+
+        <style>
+          .button-channel {
+            width: fit-content;
+            margin: 0 2em 1em 0;
+            padding: 0.5em 1em;
+            border-radius: 0.5em;
+            font-size: 1.5em;
+            outline: 0;
+            cursor: pointer;
+            border: none;
+            background: #fff;
+            color: #696969;
+            box-shadow: 0 4px 14px 0 rgb(214, 214, 214);
+          }
+        </style>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function change_channel (channel_name) {
+      window.location.replace("?channel=" + channel_name);
+      return true;
+    }
+
+    function set_default_channel (channel_name) {
+      var query = window.location.search.substring(1);
+      if (query == "") {
+        change_channel(channel_name);
+      }
+    }
+
+    function get_current_query () {
+      return window.location.search.substring(1);
+    }
+
+    function get_channel_name_from_query (query) {
+      let query_value = null;
+      if (query === "") {
+        return query_value;
+      }
+      if (typeof query === "string") {
+        query_value = query;
+        return query_value.replace("channel=", "");
+      }
+      return query_value;
+    }
+
+    function find_db_channel_by_name (channel_name) {
+      return db_channels.find(o => o.name === channel_name);
+    }
+
+    function check_available_channel(channel) {
+      if (channel.name === "void") {
+        return channel.value;
+      }
+      return channel;
+    }
+
+    function play (channel) {
+      let valid_channel = check_available_channel(channel);
+      window.onload = function () {
+        document.getElementById("tvsource").src = valid_channel.value;
+        videojs('tvplay').play();
+      }
+    }
+
+    set_default_channel("VTV1");
+    var query = get_current_query();
+    var selected_channel = get_channel_name_from_query(query);
+    if (typeof selected_channel !== "undefined") {
+      var db_channel = find_db_channel_by_name(selected_channel);
+      play(db_channel);
+    }
+
+  </script>
+</body>
